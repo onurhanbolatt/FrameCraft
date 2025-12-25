@@ -1,0 +1,62 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.cache
+*.userprefs
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# .NET Core
+*.deps.json
+
+# Local environment files
+appsettings.*.local.json
+appsettings.Local.json
+*.local.json
+
+# Secrets
+secrets.json
+*.pfx
+*.key
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Environment files 
+.env
+.env.local
+.env.production
+.env.*.local
+!.env.example
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml

@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FrameCraft.API/FrameCraft.API.csproj" />
+    <Project Path="src/FrameCraft.Application/FrameCraft.Application.csproj" />
+    <Project Path="src/FrameCraft.Domain/FrameCraft.Domain.csproj" />
+    <Project Path="src/FrameCraft.Infrastructure/FrameCraft.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FrameCraft.UnitTests/FrameCraft.UnitTests.csproj" />
+  </Folder>
+</Solution>

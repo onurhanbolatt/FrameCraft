@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  api:
+    image: framecraft-api:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/FrameCraft.API/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - JwtSettings__Secret=${JWT_SECRET}
+      - AWS__S3__AccessKey=${AWS_ACCESS_KEY}
+      - AWS__S3__SecretKey=${AWS_SECRET_KEY}
+      - AWS__S3__BucketName=${S3_BUCKET_NAME}
+      - AWS__S3__Region=${AWS_REGION:-eu-central-1}
+      - Seq__ServerUrl=http://seq:5341
+    depends_on:
+      db:
+        condition: service_healthy
+      seq:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - framecraft-network
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${DB_PASSWORD}" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - framecraft-network
+
+  seq:
+    image: datalust/seq:latest
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq-data:/data
+    restart: unless-stopped
+    networks:
+      - framecraft-network
+
+volumes:
+  sqlserver-data:
+  seq-data:
+
+networks:
+  framecraft-network:
+    driver: bridge

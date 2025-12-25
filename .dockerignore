@@ -1,0 +1,52 @@
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# IDE folders
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test results
+**/TestResults/
+**/coverage/
+
+# NuGet
+**/packages/
+*.nupkg
+
+# Logs
+**/logs/
+*.log
+
+# Local settings
+appsettings.local.json
+appsettings.*.local.json
+*.local.json
+
+# Docker
+**/docker-compose*.yml
+**/Dockerfile*
+**/.docker/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Misc
+*.swp
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db

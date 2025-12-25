@@ -1,0 +1,102 @@
+# ============================================
+# FrameCraft - Docker Compose (Development)
+# ============================================
+# Kullanım:
+#   docker-compose up -d              # Tüm servisleri başlat
+#   docker-compose up -d sqlserver    # Sadece SQL Server
+#   docker-compose up -d seq          # Sadece Seq
+#   docker-compose logs -f api        # API loglarını izle
+#   docker-compose down               # Tüm servisleri durdur
+# ============================================
+
+services:
+  # ============================================
+  # SQL Server 2022
+  # ============================================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: framecraft-sqlserver
+    hostname: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=FrameCraft123!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - framecraft-network
+    restart: unless-stopped
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "FrameCraft123!" -C -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ============================================
+  # Seq - Structured Log Server
+  # ============================================
+  seq:
+    image: datalust/seq:latest
+    container_name: framecraft-seq
+    hostname: seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:80"       # Web UI: http://localhost:5341
+      - "5342:5341"     # Ingestion API
+    volumes:
+      - seq-data:/data
+    networks:
+      - framecraft-network
+    restart: unless-stopped
+
+  # ============================================
+  # FrameCraft API
+  # ============================================
+  api:
+    build:
+      context: .
+      dockerfile: src/FrameCraft.API/Dockerfile
+    container_name: framecraft-api
+    hostname: api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # SQL Server bağlantısı
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CsoMaster;User Id=sa;Password=FrameCraft123!;TrustServerCertificate=True;MultipleActiveResultSets=true
+      # Seq bağlantısı
+      - Serilog__WriteTo__3__Args__serverUrl=http://seq:5341
+    ports:
+      - "5000:8080"     # API: http://localhost:5000
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      seq:
+        condition: service_started
+    networks:
+      - framecraft-network
+    restart: unless-stopped
+    volumes:
+      - api-logs:/var/log/framecraft
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  framecraft-network:
+    driver: bridge
+    name: framecraft-network
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  sqlserver-data:
+    name: framecraft-sqlserver-data
+  seq-data:
+    name: framecraft-seq-data
+  api-logs:
+    name: framecraft-api-logs
